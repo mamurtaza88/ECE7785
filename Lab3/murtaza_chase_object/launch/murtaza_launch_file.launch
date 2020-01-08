@@ -1,0 +1,15 @@
+<launch>
+
+<include file="$(find turtlebot3_bringup)/launch/turtlebot3_robot.launch">
+
+</include>
+
+<include file="$(find raspicam_node)/launch/camerav2_480x360_10fps.launch">
+
+</include>
+
+<node pkg="murtaza_chase_object" type="find_ball.py" name="find_ball">
+
+</node>
+
+</launch>

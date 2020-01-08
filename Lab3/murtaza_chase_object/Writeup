@@ -1,0 +1,49 @@
+1) What is the sampling time of your system? How/Why did you choose this
+I was just using call back function but LIDAR data was 5 Hz as per data sheet and video was 10fps so Lidar was operating at half the rate of video. So it was publishing at the lower of the two values.
+
+2) What variant of PID control did you use? Why? What is your controller susceptible to?
+I implemented just P controller because it was easy to implement and was robust if the gains were low. It is suspectible to sudden change in ball location but I solved it by introducing dead regions.
+
+3) If you use an integral term, how do you deal with windup? If you use a derivative term how do you deal with noise/fast changes in the object’s
+location? If you just used purely proportional control, how do you deal with disturbances?
+
+I just used P controller and made it robust by introducing the dead region where it won't do anything. Also I implemented angular and linear velocity seperately to counter disturbances.
+
+4) What does it mean for this system to be unstable?
+It mean't that controller motor reaches its limit or controller keeps on rotating. It also mean't that robot is not able to track its object properly.
+
+5) Describe your algorithm to determine where the object is relative to the robot. Specifically, how do you use the camera and LIDAR data to produce a desired velocity vector? Include mathematical expressions used.
+
+I described my camera frame to have zero angle at the center, +31.1 degrees on the left and -31.2 degrees on the right. Lidar had 360 vector.
+I first made the reference plane of both the sensors aligned. This was done by first getting object width and object frame from detectobject file. I then calculated w_degrees as follow:
+w_degree = width_object*(62.2/self.frame)
+
+I then calculated the angle related to the position of the ball in the camera coordinate as follow:
+theta_Actual = ball_pos*(62.2/self.frame)
+
+I then calculated the lidar position in camera frame as follow:
+d_lidar_left_camFrame = int(math.floor(theta_Actual+w_degree/2))
+d_lidar_right_camFrame = int(math.floor(theta_Actual-w_degree/2))
+
+If lidar position in camera is less than 0, I added 360 to it to map the correct index of Lidar. Finally I took the average of it.
+
+theta_Actual = self.ball_pos*(62.2/self.frame)
+width_object = self.ball_rad-30
+print("width_object = ", width_object)
+w_degree = width_object*(62.2/self.frame)
+d_lidar_left_camFrame = int(math.floor(theta_Actual+w_degree/2))
+d_lidar_right_camFrame = int(math.floor(theta_Actual-w_degree/2))
+d_actual = 0; k = 0;
+print("lidar_value[0] = " ,lidar_value[0])
+print("d_lidar_left_camFrame = ",d_lidar_left_camFrame)
+print("d_lidar_right_camFrame = ",d_lidar_right_camFrame)  
+for x in range(d_lidar_right_camFrame, d_lidar_left_camFrame):
+	if x < 0:
+           x = x + 360
+                  
+           d_actual = d_actual + lidar_value[x]
+           k += 1
+                
+                
+         if k!= 0:   
+           d_actual = d_actual/k
